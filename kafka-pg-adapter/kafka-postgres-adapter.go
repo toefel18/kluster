@@ -1,14 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
-	"github.com/bsm/sarama-cluster"
-	"github.com/satori/go.uuid"
 	"os/signal"
-	"database/sql"
-	_ "github.com/lib/pq"
+
 	"github.com/Shopify/sarama"
+	"github.com/bsm/sarama-cluster"
+	_ "github.com/lib/pq"
+	"github.com/satori/go.uuid"
 )
 
 func main() {
@@ -67,8 +68,9 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 		}
 	}
 }
+
 func executeDatabaseMsg(message *sarama.ConsumerMessage, db *sql.DB) {
-	query := string(message.Value)
+	query := string(message.Value) //TODO parse as a transaction of 1..n messages
 	_, err := db.Exec(query)
 	if err != nil {
 		log.Printf("Error while executing query %v, error: %v", query, err.Error())
