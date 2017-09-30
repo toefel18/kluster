@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	"os"
-	"github.com/Shopify/sarama"
 	"github.com/toefel18/kluster/kluster-client-golang/kluster"
+	"time"
 )
 
 func main() {
@@ -14,8 +14,24 @@ func main() {
 	kafkaMutationTopic := mustHaveEnvironment("KAFKA_MUTATION_TOPIC")
 	kafkaResponseTopic := mustHaveEnvironment("KAFKA_RESPONSE_TOPIC")
 
-	kluster.NewFutureResult()
+	log.Println("creating kafka client")
 
+	client := kluster.NewKafkaClient(kafkaBootstrapServers, kafkaMutationTopic, kafkaResponseTopic)
+
+	log.Println("client created")
+	defer client.Close()
+
+	for ; ; {
+		queryPromise := client.Exec("SELECT 2+2 as Count", 5*time.Second)
+		res, err := queryPromise.WaitForSingle()
+		if err != nil {
+			log.Fatalf("error while executing query %v", err.Error())
+		}
+		log.Println(res.Rows())
+		time.Sleep(5*time.Second)
+	}
+
+	log.Println("Exiting")
 }
 
 func mustHaveEnvironment(name string) string {

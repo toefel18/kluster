@@ -10,6 +10,8 @@ import (
 	"github.com/bsm/sarama-cluster"
 	_ "github.com/lib/pq"
 	"github.com/satori/go.uuid"
+	"time"
+	"fmt"
 )
 
 func main() {
@@ -35,6 +37,11 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true
+	config.Producer.RequiredAcks = sarama.WaitForLocal
+	config.Producer.Retry.Max = 5
+	config.Producer.Flush.Frequency = 1 * time.Millisecond
+	config.Producer.Return.Successes = true
+	config.Producer.Return.Errors = true
 
 	brokers := []string{bootstrapServers}
 	mutationConsumer, err := cluster.NewConsumer(brokers, uuid.NewV4().String(), []string{mutationTopic}, config)
@@ -42,6 +49,11 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 		return err
 	}
 	defer mutationConsumer.Close()
+
+	producer, err := sarama.NewSyncProducer(brokers, &config.Config)
+	if err != nil {
+		log.Fatalf("Error creating kafka producer %v", err.Error())
+	}
 
 	programInterrupted := make(chan os.Signal, 1)
 	signal.Notify(programInterrupted, os.Interrupt)
@@ -53,7 +65,9 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 		case msg, ok := <-mutationConsumer.Messages():
 			if ok {
 				log.Printf("Received kafka message, key=%v val=%v", string(msg.Key), string(msg.Value))
-				executeDatabaseMsg(msg, db)
+				executeDatabaseMsg(msg, db, producer, responseTopic)
+			} else {
+				log.Printf("incoming message channel closed, kafka consumer must be stopped")
 			}
 		case msg, ok := <-mutationConsumer.Notifications():
 			if ok {
@@ -64,19 +78,29 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 				log.Printf("Received kafka error %v", err.Error())
 			}
 		case <-programInterrupted:
+			log.Printf("interrupt received, not consuming messages anymore")
 			return nil
 		}
 	}
 }
 
-func executeDatabaseMsg(message *sarama.ConsumerMessage, db *sql.DB) {
+func executeDatabaseMsg(message *sarama.ConsumerMessage, db *sql.DB, producer sarama.SyncProducer, responseTopic string) {
 	query := string(message.Value) //TODO parse as a transaction of 1..n messages
-	_, err := db.Exec(query)
+	res, err := db.Exec(query)
+	var result string
 	if err != nil {
-		log.Printf("Error while executing query %v, error: %v", query, err.Error())
+		result = fmt.Sprintf("Error while executing query %v, error: %v", query, err.Error())
+	} else {
+		rows, _ := res.RowsAffected()
+		result = fmt.Sprintf("Successfully executed query, rowsAffected=%v ", rows)
 	}
-	// TODO return result on response topic
-	log.Printf("Successfully executed %v, result ", query)
+	msg := &sarama.ProducerMessage{
+		Topic: responseTopic,
+		Key:   sarama.StringEncoder(message.Key),
+		Value: sarama.StringEncoder(result),
+	}
+	producer.SendMessage(msg)
+	log.Printf("Send result message: %v", result)
 }
 
 func mustHaveEnvironment(name string) string {
