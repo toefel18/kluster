@@ -9,7 +9,6 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
 	_ "github.com/lib/pq"
-	"github.com/satori/go.uuid"
 	"time"
 	"fmt"
 )
@@ -44,7 +43,7 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 	config.Producer.Return.Errors = true
 
 	brokers := []string{bootstrapServers}
-	mutationConsumer, err := cluster.NewConsumer(brokers, uuid.NewV4().String(), []string{mutationTopic}, config)
+	mutationConsumer, err := cluster.NewConsumer(brokers, "kluster-pg-adapter-"  + time.Now().Format(time.RFC3339), []string{mutationTopic}, config)
 	if err != nil {
 		return err
 	}
@@ -66,6 +65,7 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 			if ok {
 				log.Printf("Received kafka message, key=%v val=%v", string(msg.Key), string(msg.Value))
 				executeDatabaseMsg(msg, db, producer, responseTopic)
+				mutationConsumer.CommitOffsets()
 			} else {
 				log.Printf("incoming message channel closed, kafka consumer must be stopped")
 			}

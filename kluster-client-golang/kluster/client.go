@@ -15,11 +15,12 @@ import (
 	"github.com/oklog/ulid"
 	"os/signal"
 	"os"
+	"errors"
 )
 
 type Client interface {
-	Exec(stmtQuery string, expireIn time.Duration) FutureResult
-	Close()
+	Exec(stmtQuery string, expireIn time.Duration) (FutureResult, error)
+	Close() error
 }
 
 type Result interface {
@@ -96,14 +97,17 @@ func NewKafkaClient(bootstrapServers, mutationTopic, responseTopic string) Clien
 	//consumers require cluster configuration due to consumer groups and rebalancing algo's
 	clusterConfig := cluster.NewConfig()
 	clusterConfig.Config = *config
+	clusterConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
 	clusterConfig.Consumer.Return.Errors = true
 	clusterConfig.Group.Return.Notifications = true
 
-	consumerGroup := strconv.FormatUint(ulid.Now(), 10)
+	consumerGroup := "kluster-client-"  + time.Now().Format(time.RFC3339)
 	consumer, err := cluster.NewConsumer(servers, consumerGroup, []string{responseTopic}, clusterConfig)
 	if err != nil {
 		log.Fatalf("[kafkaClient] Error creating kafka consumer %v", err.Error())
 	}
+
+	time.Sleep(1000 * time.Millisecond) // otherwise the query is sent after the consumer connects, and it waits for timeout
 
 	log.Println("[kafkaClient] Listening for kafka messages")
 
@@ -116,10 +120,25 @@ func NewKafkaClient(bootstrapServers, mutationTopic, responseTopic string) Clien
 
 	go resultTracker.consumeResults()
 
-	return &kafkaClient{mutationTopic, producer, resultTracker}
+	client := &kafkaClient{mutationTopic, producer, resultTracker}
+	go client.waitForInterruptAndClose()
+
+	return client
+}
+func (c *kafkaClient) waitForInterruptAndClose() {
+	programInterrupted := make(chan os.Signal, 1)
+	signal.Notify(programInterrupted, os.Interrupt)
+	<-programInterrupted
+	c.Close()
 }
 
-func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) FutureResult {
+func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) (res FutureResult, err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			res = nil
+			err = recovered
+		}
+	}()
 	queryId := strconv.FormatUint(ulid.Now(), 10)
 	msg := &sarama.ProducerMessage{
 		Topic: c.mutationTopic,
@@ -129,12 +148,21 @@ func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) FutureResul
 	future := c.resultTracker.track(queryId, expireIn)
 	c.producer.SendMessage(msg)
 	log.Printf("[kafkaClient] sent query for execution with id %v: %v", queryId, stmtQuery)
-	return future
+	return future, nil
 }
 
-func (c *kafkaClient) Close() {
+func (c *kafkaClient) Close() error {
 	c.producer.Close()
 	c.resultTracker.consumer.Close()
+	c.resultTracker.closeAllFutures()
+	return nil //todo return merged error
+}
+
+func (c *kafkaResultTracker) closeAllFutures() {
+	for queryId, future := range c.resultsToTrack {
+		log.Printf("[kafkaResultTracker] closing result tracker for query id %v", queryId)
+		close(future.resultReady)
+	}
 }
 
 func (c *kafkaResultTracker) track(queryId string, expireIn time.Duration) FutureResult {
@@ -151,28 +179,26 @@ func (c *kafkaResultTracker) track(queryId string, expireIn time.Duration) Futur
 }
 
 func (c *kafkaResultTracker) consumeResults() {
-	programInterrupted := make(chan os.Signal, 1)
-	signal.Notify(programInterrupted, os.Interrupt)
-
 	log.Println("[kafkaResultTracker] Consuming query results from kafka")
-
 	for {
 		select {
 		case msg, ok := <-c.consumer.Messages():
 			if ok {
 				log.Printf("[kafkaResultTracker] Received result message, key=%v val=%v", string(msg.Key), string(msg.Value))
 				c.processResult(msg)
+				c.consumer.CommitOffsets()
 			} else {
 				log.Printf("[kafkaResultTracker] incoming result channel closed, kafka consumer must be stopped")
 				return
+			}
+		case msg, ok := <-c.consumer.Notifications():
+			if ok {
+				log.Printf("Received kafka balancing notification claimed=%v, released=%v, current=%v", msg.Claimed, msg.Released, msg.Current)
 			}
 		case err, ok := <-c.consumer.Errors():
 			if ok {
 				log.Printf("[kafkaResultTracker] Received kafka error %v", err.Error())
 			}
-		case <-programInterrupted:
-			log.Printf("[kafkaResultTracker] interrupt received, not consuming results anymore")
-			c.consumer.Close()
 		}
 	}
 }
@@ -215,10 +241,14 @@ func (fr *futureResult) WaitForSingle() (Result, error) {
 	timeout := time.NewTicker(fr.expireAt.Sub(time.Now()))
 
 	select {
-	case result := <- fr.ResultChannel():
-		log.Printf("[futureResult] Query %v has produced a result %v", fr.queryId, result)
-		timeout.Stop()
-		return result, nil
+	case result, ok := <- fr.ResultChannel():
+		if ok {
+			log.Printf("[futureResult] Query %v has produced a result %v", fr.queryId, result)
+			timeout.Stop()
+			return result, nil
+		} else {
+			return nil, errors.New("result channel closed")
+		}
 	case <-timeout.C:
 		log.Printf("[futureResult] Query %v has timed out", fr.queryId)
 		return nil, TimeoutError{fr.queryId, fr.expireAt, fr.expireIn}
