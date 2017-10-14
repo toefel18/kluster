@@ -14,7 +14,8 @@ import (
 )
 
 func main() {
-	log.Println("Starting Kafka -> Postgres adapter")
+	log.Println("Starting Kafka -> Postgres adapter, waiting 10 seconds for kafka and postgres to init")
+	time.Sleep(10 * time.Second)
 	pgConnectionString := mustHaveEnvironment("DATABASE_ADDRESS")
 	kafkaBootstrapServers := mustHaveEnvironment("KAFKA_BOOTSTRAP_SERVERS")
 	kafkaMutationTopic := mustHaveEnvironment("KAFKA_MUTATION_TOPIC")
@@ -25,6 +26,7 @@ func main() {
 		log.Fatalf("Error connecting to postgres: %v", err.Error())
 	}
 	log.Printf("Connected to DB %v", pgConnectionString)
+
 
 	if err := consumeMutations(kafkaBootstrapServers, kafkaMutationTopic, kafkaResponseTopic, db); err != nil {
 		log.Fatalf("Error with Kafka %v", err.Error())

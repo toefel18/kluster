@@ -22,8 +22,11 @@ func main() {
 	defer client.Close()
 
 	for ; ; {
-		queryPromise := client.Exec("SELECT 2+2 as Count", 5*time.Second)
-		_, err := queryPromise.WaitForSingle()
+		queryPromise, err := client.Exec("SELECT 2+2 as Count", 5*time.Second)
+		if err != nil {
+			log.Fatalf("error while executing query %v", err.Error())
+		}
+		_, err = queryPromise.WaitForSingle()
 		if err != nil {
 			log.Fatalf("error while executing query %v", err.Error())
 		}

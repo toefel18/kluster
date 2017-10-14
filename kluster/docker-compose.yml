@@ -1,0 +1,64 @@
+---
+# Spins up Kafka and 3 PostgreSQL instances with adapters connected to it
+version: '3'
+services:
+#  pg-adapter:
+#    build: ../kafka-pg-adapter
+#  kluster-client:
+#    build: ../kluster-client-golang
+  kafka:
+    image: spotify/kafka
+    environment:
+      - TOPICS=kluster-mutation-response,kluster-mutation-test
+      - ADVERTISED_HOST=kafka
+    #these portmappings are required to allow external clients to access the cluster
+    ports:
+      - 9092:9092
+      - 2181:2181
+  posgres-1:
+    image: postgres
+    environment:
+      - POSTGRES_USER=kluster
+      - POSTGRES_PASSWORD=kluster
+  pg-adapter-1:
+    build: ../kafka-pg-adapter
+    depends_on:
+      - posgres-1
+      - kafka
+    environment:
+      - KAFKA_RESPONSE_TOPIC=kluster-mutation-response
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-1:5432/kluster?sslmode\=disable
+      - KAFKA_MUTATION_TOPIC=kluster-mutation-test
+
+  posgres-2:
+    image: postgres
+    environment:
+      - POSTGRES_USER=kluster
+      - POSTGRES_PASSWORD=kluster
+  pg-adapter-2:
+    build: ../kafka-pg-adapter
+    depends_on:
+      - posgres-2
+      - kafka
+    environment:
+      - KAFKA_RESPONSE_TOPIC=kluster-mutation-response
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-2:5432/kluster?sslmode\=disable
+      - KAFKA_MUTATION_TOPIC=kluster-mutation-test
+
+  posgres-3:
+    image: postgres
+    environment:
+      - POSTGRES_USER=kluster
+      - POSTGRES_PASSWORD=kluster
+  pg-adapter-3:
+    build: ../kafka-pg-adapter
+    depends_on:
+      - posgres-3
+      - kafka
+    environment:
+      - KAFKA_RESPONSE_TOPIC=kluster-mutation-response
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-3:5432/kluster?sslmode\=disable
+      - KAFKA_MUTATION_TOPIC=kluster-mutation-test

@@ -1,13 +1,30 @@
 # kluster
 cluster of N postgres instances using Kafka as a mechanism to keep the instances in-sync.
 
+You can build and start the complete cluster by simply running:
+
+```bash
+    # will build the sources, build containers and start kafka, 3 postgres instances 
+    make
+    
+    # will stop the complete cluster
+    make stop
+    
+    # will clean the builds and remove the containers 
+    make cleanAll
+```
+
 Spin up kafka and postgres
 ```sh
 docker run --name kluster-kafka -d -p 2181:2181 -p 9092:9092 --env ADVERTISED_HOST=localhost --env ADVERTISED_PORT=9092 --env TOPICS=kluster-mutation,kluster-response spotify/kafka
             
-docker run --name kluster-postgres-1 -d -p 20000:5432 -e POSTGRES_USER=kluster -e POSTGRES_PASSWORD=kluster -d postgres
-docker run --name kluster-postgres-2 -d -p 20001:5432 -e POSTGRES_USER=kluster -e POSTGRES_PASSWORD=kluster -d postgres
+docker run --name kluster-postgres-1 -d -p 20001:5432 -e POSTGRES_USER=kluster -e POSTGRES_PASSWORD=kluster -d postgres
+docker run --name kluster-postgres-2 -d -p 20002:5432 -e POSTGRES_USER=kluster -e POSTGRES_PASSWORD=kluster -d postgres
+docker run --name kluster-postgres-3 -d -p 20003:5432 -e POSTGRES_USER=kluster -e POSTGRES_PASSWORD=kluster -d postgres
 ```
+
+or use `docker-compose` to spin up the whole cluster, including clients:
+
 
 All writes are published as queries on a Kafka topic with one partition. 
 Daemons read from this topic, execute the queries and write the response to the

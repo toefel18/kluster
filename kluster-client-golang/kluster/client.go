@@ -133,12 +133,12 @@ func (c *kafkaClient) waitForInterruptAndClose() {
 }
 
 func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) (res FutureResult, err error) {
-	defer func() {
-		if recovered := recover(); recovered != nil {
-			res = nil
-			err = recovered
-		}
-	}()
+	//defer func() {
+	//	if recovered := recover(); recovered != nil {
+	//		res = nil
+	//		err = recovered
+	//	}
+	//}()
 	queryId := strconv.FormatUint(ulid.Now(), 10)
 	msg := &sarama.ProducerMessage{
 		Topic: c.mutationTopic,
