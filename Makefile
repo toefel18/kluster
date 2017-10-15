@@ -1,17 +1,21 @@
 .PHONY: kafka-pg-adapter kluster-client-golang build start stop clean cleanCluster cleanAll
 
+# default target
+run: build start
+
+build: kafka-pg-adapter kluster-client-golang
+
 kafka-pg-adapter:
 	cd kafka-pg-adapter && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 kluster-client-golang:
 	cd kluster-client-golang && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-build: kafka-pg-adapter kluster-client-golang
-
+# start loses state, for testing this is currently the easiest
 start:
 	cd kluster && docker-compose up --build --abort-on-container-exit
 
-stop: 
+stop:
 	cd kluster && docker-compose down
 
 clean: 
@@ -22,4 +26,3 @@ cleanCluster:
 	
 cleanAll: clean cleanCluster
 
-run: build start
