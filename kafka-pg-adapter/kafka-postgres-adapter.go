@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 	"time"
 	"fmt"
+	"github.com/satori/go.uuid"
 )
 
 func main() {
@@ -21,10 +22,19 @@ func main() {
 	kafkaMutationTopic := mustHaveEnvironment("KAFKA_MUTATION_TOPIC")
 	kafkaResponseTopic := mustHaveEnvironment("KAFKA_RESPONSE_TOPIC")
 
+	log.Printf("postgres connection string %v", pgConnectionString)
+
 	db, err := sql.Open("postgres", pgConnectionString)
 	if err != nil {
 		log.Fatalf("Error connecting to postgres: %v", err.Error())
 	}
+
+	if res, err := db.Query("SELECT 2+2 as Count"); err != nil {
+		log.Fatalf("Error executing query on postgres: %v", err.Error())
+	} else {
+		res.Close()
+	}
+
 	log.Printf("Connected to DB %v", pgConnectionString)
 
 
@@ -44,8 +54,10 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 	config.Producer.Return.Successes = true
 	config.Producer.Return.Errors = true
 
+	consumerGroup := fmt.Sprintf("kluster-pg-adapter-%v", uuid.NewV4())
+
 	brokers := []string{bootstrapServers}
-	mutationConsumer, err := cluster.NewConsumer(brokers, "kluster-pg-adapter-"  + time.Now().Format(time.RFC3339), []string{mutationTopic}, config)
+	mutationConsumer, err := cluster.NewConsumer(brokers, consumerGroup, []string{mutationTopic}, config)
 	if err != nil {
 		return err
 	}
@@ -59,7 +71,7 @@ func consumeMutations(bootstrapServers string, mutationTopic string, responseTop
 	programInterrupted := make(chan os.Signal, 1)
 	signal.Notify(programInterrupted, os.Interrupt)
 
-	log.Println("Listening for kafka messages")
+	log.Println("Listening for kafka messages, consumerGroupId=" + consumerGroup)
 
 	for {
 		select {

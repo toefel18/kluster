@@ -15,50 +15,69 @@ services:
     ports:
       - 9092:9092
       - 2181:2181
-  posgres-1:
+    networks:
+      - cluster
+
+  postgres-1:
     image: postgres
     environment:
       - POSTGRES_USER=kluster
       - POSTGRES_PASSWORD=kluster
+    networks:
+      - cluster
   pg-adapter-1:
     build: ../kafka-pg-adapter
     depends_on:
-      - posgres-1
+      - postgres-1
       - kafka
     environment:
       - KAFKA_RESPONSE_TOPIC=kluster-mutation-response
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-1:5432/kluster?sslmode\=disable
+      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-1:5432/kluster?sslmode=disable
       - KAFKA_MUTATION_TOPIC=kluster-mutation-test
+    networks:
+      - cluster
 
-  posgres-2:
+  postgres-2:
     image: postgres
     environment:
       - POSTGRES_USER=kluster
       - POSTGRES_PASSWORD=kluster
+    networks:
+      - cluster
   pg-adapter-2:
     build: ../kafka-pg-adapter
     depends_on:
-      - posgres-2
+      - postgres-2
       - kafka
     environment:
       - KAFKA_RESPONSE_TOPIC=kluster-mutation-response
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-2:5432/kluster?sslmode\=disable
+      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-2:5432/kluster?sslmode=disable
       - KAFKA_MUTATION_TOPIC=kluster-mutation-test
+    networks:
+      - cluster
 
-  posgres-3:
+  postgres-3:
     image: postgres
     environment:
       - POSTGRES_USER=kluster
       - POSTGRES_PASSWORD=kluster
+    networks:
+      - cluster
+
   pg-adapter-3:
     build: ../kafka-pg-adapter
     depends_on:
-      - posgres-3
+      - postgres-3
       - kafka
     environment:
       - KAFKA_RESPONSE_TOPIC=kluster-mutation-response
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-3:5432/kluster?sslmode\=disable
+      - DATABASE_ADDRESS=postgres://kluster:kluster@postgres-3:5432/kluster?sslmode=disable
       - KAFKA_MUTATION_TOPIC=kluster-mutation-test
+    networks:
+      - cluster
+
+networks:
+  cluster:

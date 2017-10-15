@@ -1,3 +1,3 @@
-FROM centurylink/ca-certs
+FROM alpine
 COPY ./main /main
 ENTRYPOINT ["/main"]
