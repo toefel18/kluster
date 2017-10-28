@@ -22,7 +22,7 @@ clean:
 	cd kafka-pg-adapter && rm -f main && cd ../kluster-client-golang && rm -f main
 
 cleanCluster:
-	cd ../kluster && docker-compose rm -f
+	cd kluster && docker-compose rm -f
 	
 cleanAll: clean cleanCluster
 
