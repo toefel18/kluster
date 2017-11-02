@@ -10,6 +10,12 @@ keep all nodes in-sync. Read queries can be handled by a single instance.
 Problems:
 
  1. How to make sure that you do a write, and then a read, you should see your previously written data.
+    
+    > Suggested solution (Ronald Koster)
+    > 1. introduce a second topic read-queries, all adapters consume from that topic using the same group-id.
+    > 2. read-queries are posted on the read-queries topic **and** the trip mutations topic.
+    > 3. only the node that gets the read-query via both channels executes the read.  
+    
  1. How to handle stragglers. 
   
 ### Quickstart
