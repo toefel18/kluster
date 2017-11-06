@@ -1,24 +1,62 @@
 # Kluster
-Cluster of N postgres instances using Kafka as a mechanism to keep the instances in-sync. 
 
-The goal is to have a relational database with high availability and scalability 
-(at least on read level). This project is a POC to see if we can start N databases
-and keep keep them synchronized using kafka. You write statements to a kafka topic 
-(with 1 partition), and all the database instances execute that statement. This should
-keep all nodes in-sync. Read queries can be handled by a single instance.
+Cluster of N SQL-DBMS instances kept in sync using Kafka __consistantly__. So no need for eventual-consisteny! The price for
+the conistsenty is asynchronicity.
 
-Problems:
+You can use any type of DBMS (PostgreSQL, Oracle, MariaDB, etc.). In fact you can even mix them in the same cluster:
+some nodes are PostgreSQL, some are Oracle, etc.
 
- 1. How to make sure that you do a write, and then a read, you should see your previously written data.
-    
-    > Suggested solution (Ronald Koster)
-    > 1. introduce a second topic read-queries, all adapters consume from that topic using the same group-id.
-    > 2. read-queries are posted on the read-queries topic **and** the trip mutations topic.
-    > 3. only the node that gets the read-query via both channels executes the read.  
-    
- 1. How to handle stragglers. 
-  
-### Quickstart
+Traditionally DBMSes support clustering each in their onw way. They use master-slave nodes, active-active or active-passive modes, etc.
+All these approaches are different for each DBMS vendor. Kluster provides a way to cluster a set of DBMS nodes of in a
+vendor independant way.
+
+
+## Design
+
+qqqq UML image
+
+ALL topic: 1 partition, each node own consumer group
+ONE topic: M >= 1 partition, all nodes in same consumer group
+
+Client writes its req to both topics
+Each node reads it from ALL topic, and 1 reads it from the ONE topic.
+
+Per node:
+IF (CUD request) {
+    do mutation on local store
+    IF (same req arrives from ONE topic within timeoutPeriod) {
+        send processing rsp to RESPONSE topic
+    }
+} ELSE { // R request
+    IF (same req arrives from ONE topic within timeoutPeriod) {
+        do query on local store
+        send processing rsp to RESPONSE topic
+    }
+}
+
+### Replication
+
+All nodes read from ALL topic, so they all process all CUD in right order.
+
+### Load Balancing
+
+Only 1 node does R req and writes its response to the RESPONSE topic
+Only 1 node writes in CUD result to RESPONSE topic
+
+### Consistency
+
+Client can wait for response on RESPONSE topic to see if result inidcates success or error.
+
+### Backup
+
+qqqq
+
+### Recovery
+
+qqqq
+
+
+## Quickstart
 
  1. Compile the software and start a cluster. This is done using a Makefile and docker-compose.  
  
@@ -40,7 +78,7 @@ Problems:
         2017/10/28 13:34:32 [kafkaResultTracker] Received result message, key=1509190472045 val=Successfully executed query, rowsAffected=1 
         2017/10/28 13:34:32 [kafkaResultTracker] received result for query with id 1509190472045, was query was already finished at 2017-10-28T13:34:32+02:00
 
-#### Manual steps
+### Manual steps
 You can also spin up a cluster manually:
 
 ```sh
