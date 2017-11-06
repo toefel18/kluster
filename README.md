@@ -1,12 +1,12 @@
 # Kluster
 
-Cluster of N SQL-DBMS instances kept in sync using Kafka __consistantly__. So no need for eventual-consisteny! The price for
-the conistsenty is asynchronicity.
+Cluster of N SQL-DBMS instances kept in sync using Kafka __consistently__. So no need for eventual-consisteny! The price for
+the consistenty is asynchronicity.
 
 You can use any type of DBMS (PostgreSQL, Oracle, MariaDB, etc.). In fact you can even mix them in the same cluster:
 some nodes are PostgreSQL, some are Oracle, etc.
 
-Traditionally DBMSes support clustering each in their onw way. They use master-slave nodes, active-active or active-passive modes, etc.
+Traditionally DBMSes support clustering each in their own way. They use master-slave nodes, active-active or active-passive modes, etc.
 All these approaches are different for each DBMS vendor. Kluster provides a way to cluster a set of DBMS nodes of in a
 vendor independant way.
 
@@ -22,26 +22,32 @@ Client writes its req to both topics
 Each node reads it from ALL topic, and 1 reads it from the ONE topic.
 
 Per node:
-IF (CUD request) {
+```
+IF (CUD request) { // CUD = Create, Update or Delete
     do mutation on local store
-    IF (same req arrives from ONE topic within timeoutPeriod) {
-        send processing rsp to RESPONSE topic
+    IF (same request arrives from ONE topic within timeoutPeriod) {
+        send processing response to RESPONSE topic
     }
-} ELSE { // R request
-    IF (same req arrives from ONE topic within timeoutPeriod) {
+} ELSE { // R request, R = Read
+    IF (same request arrives from ONE topic within timeoutPeriod) {
         do query on local store
-        send processing rsp to RESPONSE topic
+        send processing response to RESPONSE topic
     }
 }
+```
 
 ### Replication
 
-All nodes read from ALL topic, so they all process all CUD in right order.
+All nodes read from the ALL topic, so they all process all CUD requests in right order.
+
+NB. Kafka is clustered also, with multiple instances or each partition.
 
 ### Load Balancing
 
-Only 1 node does R req and writes its response to the RESPONSE topic
-Only 1 node writes in CUD result to RESPONSE topic
+Only 1 node does R request and writes its processing result to the RESPONSE topic
+Only 1 node writes its CUD result to RESPONSE topic
+
+NB. The ONE topic can be pafrtitioned, also giving some load balancing.
 
 ### Consistency
 
@@ -49,11 +55,18 @@ Client can wait for response on RESPONSE topic to see if result inidcates succes
 
 ### Backup
 
-qqqq
+- Select a node
+- Stop its consumer
+- Create a snapshot backup of its database
+- Restart consumer
 
 ### Recovery
 
-qqqq
+A node had crashed and has been repaired, but its database is still empty. To bring it
+
+- First use the lates database backup to poplate it
+- Next set the ONE topic consumer offset to the point corresponding to the database backup: only the messages newer than the backup are to be read.
+- Set ALL topic consumer offset to the head
 
 
 ## Quickstart
