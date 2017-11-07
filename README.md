@@ -15,10 +15,10 @@ vendor independant way.
 
 ![kluster-design](kluster-design.png)
 
-ALL topic: 1 partition, each node in its own consumer group  
-ONE topic: M >= 1 partitions, all nodes in the same consumer group
+ALL topic: 1 partition, each node in its own consumer group.  
+ONE topic: M >= 1 partitions, all nodes in the same consumer group.
 
-Client writes its req to both topics
+Client writes its request to both topics.  
 Each node reads it from ALL topic, and 1 reads it from the ONE topic.
 
 Per node:
