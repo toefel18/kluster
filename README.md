@@ -15,7 +15,7 @@ vendor independant way.
 
 ![kluster-design](kluster-design.png)
 
-ALL topic: 1 partition, each node in its own consumer group
+ALL topic: 1 partition, each node in its own consumer group  
 ONE topic: M >= 1 partitions, all nodes in the same consumer group
 
 Client writes its req to both topics
@@ -44,7 +44,7 @@ NB. Kafka is clustered also, with multiple replicated instances for each partiti
 
 ### Load Balancing
 
-Only 1 node does R request and writes its processing result to the RESPONSE topic
+Only 1 node does R request and writes its processing result to the RESPONSE topic  
 Only 1 node writes its CUD result to RESPONSE topic
 
 NB. The ONE topic can be pafrtitioned, also giving some load balancing.
