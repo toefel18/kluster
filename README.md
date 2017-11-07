@@ -10,6 +10,9 @@ Traditionally DBMSes support clustering each in their own way. They use master-s
 All these approaches are different for each DBMS vendor. Kluster provides a way to cluster a set of DBMS nodes of in a
 vendor independant way.
 
+qqqq In a way this is CQRS? event recorded on the kafka topic, projector=KafkaNode
+qqqq design KafkaNode has a DbmsAdapter and KafkaComsumers and a KafkaProducer  
+
 
 ## Design
 
