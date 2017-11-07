@@ -44,8 +44,8 @@ NB. Kafka is clustered also, with multiple replicated instances for each partiti
 
 ### Load Balancing
 
-Only 1 node does R request and writes its processing result to the RESPONSE topic  
-Only 1 node writes its CUD result to RESPONSE topic
+Only 1 node processes an R request and writes its processing result to the RESPONSE topic.  
+All nodes processes the CUD request, but only 1 node writes its processing result to RESPONSE topic.
 
 NB. The ONE topic can be pafrtitioned, also giving some load balancing.
 
