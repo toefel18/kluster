@@ -10,12 +10,12 @@ Traditionally DBMSes support clustering each in their own way. They use master-s
 All these approaches are different for each DBMS vendor. Kluster provides a way to cluster a set of DBMS nodes of in a
 vendor independant way.
 
-qqqq In a way this is CQRS? event recorded on the kafka topic, projector=KafkaNode
 qqqq design KafkaNode has a DbmsAdapter and KafkaComsumers and a KafkaProducer  
 
 
 ## Design
 
+qqqq uml class diagram, object diagram als example
 ![kluster-design](kluster-design.png)
 
 ALL topic: 1 partition, each node in its own consumer group.  
@@ -26,7 +26,7 @@ Each node reads it from ALL topic, and 1 reads it from the ONE topic.
 
 Per node:
 ```
-IF (CUD request) { // CUD = Create, Update or Delete
+IF (CUD request) { // CUD = Create, Update or Delete, aka mutation aka write
     do mutation on local store
     IF (same request arrives from ONE topic within timeoutPeriod) {
         send processing response to RESPONSE topic
