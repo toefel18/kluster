@@ -108,12 +108,12 @@ m2=_:ONE_
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>290</x>
+      <x>240</x>
       <y>200</y>
       <w>170</w>
       <h>50</h>
     </coordinates>
-    <panel_attributes>_nodeN :KlusterNode_</panel_attributes>
+    <panel_attributes>_node2 :KlusterNode_</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -121,22 +121,22 @@ m2=_:ONE_
     <coordinates>
       <x>220</x>
       <y>160</y>
-      <w>120</w>
+      <w>70</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;10.0;100.0;10.0;100.0;40.0</additional_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>180</x>
       <y>140</y>
-      <w>190</w>
+      <w>140</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;10.0;170.0;10.0;170.0;60.0</additional_attributes>
+    <additional_attributes>10.0;10.0;120.0;10.0;120.0;60.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -154,24 +154,24 @@ m2=_:RESPONSE_
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>450</x>
-      <y>60</y>
-      <w>90</w>
-      <h>180</h>
+      <x>520</x>
+      <y>50</y>
+      <w>160</w>
+      <h>190</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>70.0;10.0;70.0;160.0;10.0;160.0</additional_attributes>
+    <additional_attributes>10.0;10.0;140.0;10.0;140.0;170.0;100.0;170.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>130</x>
       <y>210</y>
-      <w>410</w>
+      <w>550</w>
       <h>90</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;40.0;10.0;70.0;390.0;70.0;390.0;10.0</additional_attributes>
+    <additional_attributes>10.0;40.0;10.0;70.0;530.0;70.0;530.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -181,7 +181,7 @@ m2=_:RESPONSE_
       <w>120</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>_dbms1: DBMS_</panel_attributes>
+    <panel_attributes>_dbms1 :DBMS_</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -198,23 +198,90 @@ m2=_:RESPONSE_
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>310</x>
+      <x>260</x>
       <y>320</y>
       <w>120</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>_dbmsN: DBMS_</panel_attributes>
+    <panel_attributes>_dbms2 :DBMS_</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>360</x>
+      <x>310</x>
       <y>240</y>
       <w>30</w>
       <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
     <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>450</x>
+      <y>200</y>
+      <w>170</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_node3 :KlusterNode_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>290</x>
+      <y>140</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;220.0;10.0;220.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>260</x>
+      <y>160</y>
+      <w>240</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;220.0;10.0;220.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>470</x>
+      <y>320</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_dbms3 :DBMS_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>240</y>
+      <w>30</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>650</x>
+      <y>320</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Key: UML2
+bg=yellow</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>

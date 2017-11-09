@@ -10,13 +10,17 @@ Traditionally DBMSes support clustering each in their own way. They use master-s
 All these approaches are different for each DBMS vendor. Kluster provides a way to cluster a set of DBMS nodes of in a
 vendor independant way.
 
-qqqq design KafkaNode has a DbmsAdapter and KafkaComsumers and a KafkaProducer  
-
 
 ## Design
 
-qqqq uml class diagram, object diagram als example
-![kluster-design](kluster-design.png)
+Overview:  
+![kluster-classes](kluster-classes.png)
+
+Example with 3 nodes:  
+![kluster-objects](kluster-objects.png)
+
+Components:  
+![kluster-components](kluster-components.png)
 
 ALL topic: 1 partition, each node in its own consumer group.  
 ONE topic: M >= 1 partitions, all nodes in the same consumer group.
