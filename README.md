@@ -91,6 +91,15 @@ referenceId: the messageId of the corresponding request
 result: JSON string containing the result of the operartion, in case of a query quite large for contains the entire result set
 ```
 
+qqqq HTODO CH to make it conform Componets diagram above: 
+- rename kluster-pg-adapter/ to kluster-db-adapters/
+- rename kafka-postgres-adapter to postgres-adapter
+- rename kluster-client-golang/ to kluster-node/
+- rename client.go to kafka-client.go
+- move kafka-client.go to kluster-node
+- rename kluster-client-golang to kluster-node/
+- main method in kluster-node.go 
+
 ## Quickstart
 
  1. Compile the software and start a cluster. This is done using a Makefile and docker-compose.  
