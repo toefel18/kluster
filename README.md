@@ -26,7 +26,7 @@ ALL topic: 1 partition, each node in its own consumer group.
 ONE topic: M >= 1 partitions, all nodes in the same consumer group.
 
 Client writes its request to both topics.  
-Each node reads it from ALL topic (because each has its own consumer group), and 1 reads it from the ONE topic (because they share a consumer group).
+Each node reads it from ALL topic (because each has its own consumer group), and only 1 reads it from the ONE topic (because they share a consumer group).
 
 Each node handles the request like this:
 ```
