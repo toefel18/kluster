@@ -110,12 +110,16 @@ m2=RESPONSE
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>430</x>
-      <y>260</y>
-      <w>110</w>
-      <h>30</h>
+      <x>330</x>
+      <y>250</y>
+      <w>320</w>
+      <h>100</h>
     </coordinates>
     <panel_attributes>Key: UML2
+
+NB. 1* means logically 1 for this diagram, 
+but since they are part of a cluster 
+multiple replications exist.
 bg=yellow</panel_attributes>
     <additional_attributes/>
   </element>
@@ -128,7 +132,7 @@ bg=yellow</panel_attributes>
       <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
-m1=1
+m1=1*
 m2=2..n</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
   </element>
@@ -141,7 +145,7 @@ m2=2..n</panel_attributes>
       <h>140</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
-m1=1
+m1=1*
 m2=2..n</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
   </element>
@@ -150,11 +154,11 @@ m2=2..n</panel_attributes>
     <coordinates>
       <x>270</x>
       <y>60</y>
-      <w>280</w>
+      <w>290</w>
       <h>160</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
-m1=1
+m1=1*
 m2=2..n</panel_attributes>
     <additional_attributes>260.0;10.0;260.0;130.0;10.0;130.0</additional_attributes>
   </element>
