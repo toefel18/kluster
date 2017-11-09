@@ -26,13 +26,14 @@ ALL topic: 1 partition, each node in its own consumer group.
 ONE topic: M >= 1 partitions, all nodes in the same consumer group.
 
 Client writes its request to both topics.  
-Each node reads it from ALL topic, and 1 reads it from the ONE topic.
+Each node reads it from ALL topic (because each has its own consumer group), and 1 reads it from the ONE topic (because they share a consumer group).
 
-Per node:
+Each node handles the request like this:
 ```
-IF (CUD request) { // CUD = Create, Update or Delete, aka mutation aka write
+allRequest = read request from ALL topic 
+IF (allRequest is a CUD request) { // CUD = Create, Update or Delete, aka mutation aka write
     do mutation on local store
-    IF (same request arrives from ONE topic within timeoutPeriod) {
+    IF (same request arrives from ONE topic within timeoutPeriod) { // same means allRequest.messageId == oneRequest.messageId
         send processing response to RESPONSE topic
     }
 } ELSE { // R request, R = Read
