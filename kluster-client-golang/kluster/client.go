@@ -19,7 +19,7 @@ import (
 )
 
 type Client interface {
-	Exec(stmtQuery string, expireIn time.Duration) (FutureResult, error)
+	Exec(stmtQuery string, expireIn time.Duration) (FutureResult, FutureResult, error)
 	Close() error
 }
 
@@ -37,7 +37,8 @@ type FutureResult interface {
 }
 
 type kafkaClient struct {
-	mutationTopic string
+	allTopic      string
+	oneTopic      string
 	producer      sarama.SyncProducer
 	resultTracker *kafkaResultTracker
 }
@@ -80,7 +81,7 @@ func (t TimeoutError) Error() string {
 	return "request with correlation id " + t.CorrelationId + " timed out at " + t.TimedOutAt.String() + ", after waiting " + t.TimedOutAfter.String()
 }
 
-func NewKafkaClient(bootstrapServers, mutationTopic, responseTopic string) Client {
+func NewKafkaClient(bootstrapServers, kafkaAllTopic, kafkaOneTopic, responseTopic string) Client {
 	servers := strings.Split(bootstrapServers, ",")
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForLocal
@@ -120,7 +121,7 @@ func NewKafkaClient(bootstrapServers, mutationTopic, responseTopic string) Clien
 
 	go resultTracker.consumeResults()
 
-	client := &kafkaClient{mutationTopic, producer, resultTracker}
+	client := &kafkaClient{kafkaOneTopic, kafkaAllTopic, producer, resultTracker}
 	go client.waitForInterruptAndClose()
 
 	return client
@@ -132,23 +133,31 @@ func (c *kafkaClient) waitForInterruptAndClose() {
 	c.Close()
 }
 
-func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) (res FutureResult, err error) {
+func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) (FutureResult, FutureResult, error) {
 	//defer func() {
 	//	if recovered := recover(); recovered != nil {
 	//		res = nil
 	//		err = recovered
 	//	}
 	//}()
-	queryId := strconv.FormatUint(ulid.Now(), 10)
+	lowerCaseQuery := strings.ToLower(stmtQuery)
+	prefix := "write"
+	if strings.HasPrefix(lowerCaseQuery, "select") {
+		prefix = "read"
+	}
+	messageId := prefix + "-" + strconv.FormatUint(ulid.Now(), 10)
 	msg := &sarama.ProducerMessage{
-		Topic: c.mutationTopic,
-		Key:   sarama.StringEncoder(queryId),
+		Topic: c.allTopic,
+		Key:   sarama.StringEncoder(messageId),
 		Value: sarama.StringEncoder(stmtQuery),
 	}
-	future := c.resultTracker.track(queryId, expireIn)
-	c.producer.SendMessage(msg)
-	log.Printf("[kafkaClient] sent query for execution with id %v: %v", queryId, stmtQuery)
-	return future, nil
+	futureAll := c.resultTracker.track(messageId, expireIn)
+	c.producer.SendMessage(msg) //send to all
+	msg.Topic = c.oneTopic
+	futureOne := c.resultTracker.track(messageId, expireIn)
+	c.producer.SendMessage(msg) //send to one
+	log.Printf("[kafkaClient] sent query for execution with id %v: %v", messageId, stmtQuery)
+	return futureAll, futureOne, nil
 }
 
 func (c *kafkaClient) Close() error {
