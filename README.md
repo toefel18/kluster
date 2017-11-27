@@ -23,25 +23,33 @@ Example with 3 nodes:
 Components:  
 ![kluster-components](kluster-components.png)
 
-ALL topic: 1 partition, each node in its own consumer group.  
-ONE topic: M >= 1 partitions, all nodes in the same consumer group.
+ALL topic: 1 partition, each node in its own consumer group, ie. ALL receive these message.  
+ONE topic: M >= 1 partitions, all nodes in the same consumer group, ie. only ONE node receives each message.
 
 Client writes its request to both topics.  
 Each node reads it from ALL topic (because each has its own consumer group), and only 1 reads it from the ONE topic (because they share a consumer group).
 
-Each node handles the request like this:
+Each node continuously reads request messages from the ALL and ONE topic asynchronously. Each messages is handed like this:
 ```
-allRequest = read request from ALL topic 
-IF (allRequest is a CUD request) { // CUD = Create, Update or Delete, aka mutation aka write
-    do mutation on local store
-    IF (same request arrives from ONE topic within timeoutPeriod) { // same means allRequest.messageId == oneRequest.messageId
-        send processing response to RESPONSE topic
+FOR EACH request received {
+    delete all expired messages from message buffer // expired == now > message.timeStamp + timeoutPeriod
+    IF (request is from ALL topic) {
+        execute request
+        IF (request already in buffer) {
+            send result to RESPONSE topic
+            delete request from buffer
+        } ELSE {
+            add request and result to buffer
+        }
+    } ELSE { // request is from ONE topic
+        IF (request already in buffer) {
+            send result from buffer to RESPONSE topic
+            delete request from buffer
+        } ELSE {
+            add request to buffer
+        }
     }
-} ELSE { // R request, R = Read
-    IF (same request arrives from ONE topic within timeoutPeriod) {
-        do query on local store
-        send processing response to RESPONSE topic
-    }
+    commit topic offset
 }
 ```
 
@@ -53,10 +61,9 @@ NB. Kafka is clustered also, with multiple replicated instances for each partiti
 
 ### Load Balancing
 
-Only 1 node processes an R request and writes its processing result to the RESPONSE topic.  
-All nodes processes the CUD request, but only 1 node writes its processing result to RESPONSE topic.
+All nodes process each request from the client only once, but only 1 node writes its processing result to RESPONSE topic.
 
-NB. The ONE topic can be pafrtitioned, also giving some load balancing.
+NB. The ONE topic can be partitioned, also giving some load balancing.
 
 ### Consistency
 
@@ -65,17 +72,17 @@ The client can wait for the response on RESPONSE topic to see if result indicate
 ### Backup
 
 - Select a node.
-- Stop its consumer.
+- Stop it, both consumers latest offsets are logged upon shutdown by the node.
 - Create a snapshot backup of its database.
-- Restart consumer.
+- Restart consumer, the consumers must each start from their latest offset + 1.
 
 ### Recovery
 
 A node had crashed and has been repaired, but its database is still empty. To bring it up again:
 
-- First use the latest database backup to poplate it.
-- Next set the ONE topic consumer offset to the point corresponding to the database backup: only the messages newer than the backup are to be read.
-- Set ALL topic consumer offset to the head.
+- First use the latest database backup to populate it.
+- Next set the ALL topic consumer offset to the point corresponding to the database backup: latest offset + 1 (see above at Backup). 
+- Set ONE topic consumer offset to the head.
 
 ### Messages
 
