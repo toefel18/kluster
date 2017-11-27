@@ -92,6 +92,12 @@ referenceId: the messageId of the corresponding request
 result: JSON string containing the result of the operartion, in case of a query quite large for contains the entire result set
 ```
 
+### Errors
+
+Client error: response on topic RESPONSE conatins an error message, eg. duplicate key insertion.
+Server error: node produces an error message on the ERROR topic, eg. cannot connect to database. Usually the node has become
+out of sunc of corrupt and manual intervention by administrator is needed 
+
 ## Quickstart
 
  1. Compile the software and start a cluster. This is done using a Makefile and docker-compose.  
