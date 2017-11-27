@@ -139,15 +139,20 @@ func (c *kafkaClient) Exec(stmtQuery string, expireIn time.Duration) (res Future
 	//		err = recovered
 	//	}
 	//}()
-	queryId := strconv.FormatUint(ulid.Now(), 10)
+	lowerCaseQuery := strings.ToLower(stmtQuery)
+	prefix := "write"
+	if strings.HasPrefix(lowerCaseQuery, "select") {
+		prefix = "read"
+	}
+	messageId := prefix + "-" + strconv.FormatUint(ulid.Now(), 10)
 	msg := &sarama.ProducerMessage{
 		Topic: c.mutationTopic,
-		Key:   sarama.StringEncoder(queryId),
+		Key:   sarama.StringEncoder(messageId),
 		Value: sarama.StringEncoder(stmtQuery),
 	}
-	future := c.resultTracker.track(queryId, expireIn)
+	future := c.resultTracker.track(messageId, expireIn)
 	c.producer.SendMessage(msg)
-	log.Printf("[kafkaClient] sent query for execution with id %v: %v", queryId, stmtQuery)
+	log.Printf("[kafkaClient] sent query for execution with id %v: %v", messageId, stmtQuery)
 	return future, nil
 }
 
