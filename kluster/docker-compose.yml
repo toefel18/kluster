@@ -9,7 +9,7 @@ services:
   kafka:
     image: spotify/kafka
     environment:
-      - TOPICS=kluster-mutation-response,kluster-mutation-test
+      - TOPICS=kluster-mutation-response,kluster-mutation-test #qqqq rename to kluster-response, split kluster-mutation info kluster-all+kluster-one
       - ADVERTISED_HOST=kafka
     #these portmappings are required to allow external clients to access the cluster
     ports:
