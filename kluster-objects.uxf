@@ -42,12 +42,12 @@ m2=_:ONE_
   <element>
     <id>UMLActor</id>
     <coordinates>
-      <x>10</x>
+      <x>20</x>
       <y>20</y>
-      <w>140</w>
+      <w>120</w>
       <h>110</h>
     </coordinates>
-    <panel_attributes>_:DatabaseClient_</panel_attributes>
+    <panel_attributes>_:KlusterClient_</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
