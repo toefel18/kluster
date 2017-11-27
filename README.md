@@ -1,7 +1,7 @@
 # Kluster
 
-Cluster of N SQL-DBMS instances kept in sync using Kafka __consistently__. So no need for eventual-consisteny! The price for
-the consistenty is asynchronicity.
+Cluster of N SQL-DBMS instances kept in sync __consistently__ using Kafka. So no need for eventual-consisteny! The price for
+the consistenty is asynchronicity and no load balancing, only replication.
 
 You can use any type of DBMS (PostgreSQL, Oracle, MariaDB, etc.). In fact one could even mix them in the same cluster, provided they speak the same SQL dialect:
 some nodes are PostgreSQL, some are Oracle, etc. If they dont speak the same SQL dialect the database adapters should do some translations.
@@ -31,7 +31,7 @@ Each node reads it from ALL topic (because each has its own consumer group), and
 
 Each node continuously reads request messages from the ALL and ONE topic asynchronously. Each messages is handed like this:
 ```
-FOR EACH request received {
+FOR EACH (request received) {
     delete all expired messages from message buffer // expired == now > message.timeStamp + timeoutPeriod
     IF (request is from ALL topic) {
         execute request
@@ -61,9 +61,10 @@ NB. Kafka is clustered also, with multiple replicated instances for each partiti
 
 ### Load Balancing
 
-All nodes process each request from the client only once, but only 1 node writes its processing result to RESPONSE topic.
-
-NB. The ONE topic can be partitioned, also giving some load balancing.
+None.
+All nodes process each request from the client only once (through the ALL topic).
+But only 1 node writes its processing result to the RESPONSE topic (through the ONE topic).
+So no load balancing in sql statement executions.
 
 ### Consistency
 
