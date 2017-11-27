@@ -124,3 +124,7 @@ func mustHaveEnvironment(name string) string {
 	}
 	return val
 }
+
+func qqqq() {
+	//qqqq
+}
