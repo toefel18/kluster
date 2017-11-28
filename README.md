@@ -68,7 +68,7 @@ NB. Kafka is clustered also, with multiple replicated instances for each partiti
 
 ### Load Balancing
 
-None for request.strictOrder == true, but fully for those with request.strictOrder == false.
+None for request.strictOrder == true, but fully for read requests with request.strictOrder == false.
 - strictOrder == true: All nodes process each request from the client only once (through the ALL topic).
   But only 1 node writes its processing result to the RESPONSE topic (through the ONE topic).
 - strictOrder == false.
