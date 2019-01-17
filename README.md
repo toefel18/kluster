@@ -29,22 +29,26 @@ Components:
 ![kluster-components](kluster-components.png)
 
 ALL topic: 
-- 1 partition, each node in its own consumer group, so *all* receive these messages. 
-- qqqq CRUD msgs
-- qqqq sp to rsp/eror topic
-- qqqq all msgs serial per node
+- 1 partition, each node in its own consumer group, so *all* receive these messages 
+- for CRUD messages
+- response is written to RESPONSE xor ERROR
+- messages are processed serial: they are processed in the given order
 
 ONE topic:
 - M >= 1 partitions, all nodes in the same consumer group, so only *one* node receives each message. 
-- qqqq R only, 
-- qqqq sp to rsp/eror topic
-- qqqq msgs processed parallel 
+- for R messages only 
+- response is written to RESPONSE xor ERROR
+- messages are processed in parallel 
 
 RESPONSE topic:
-- qqqq N rsps from ALL
-- qqqq 1 from ONE
+- receives N responses per valid request to ALL
+- receives just 1 response per request to ONE
 
 ERROR topic qqqq
+
+qqqq repeated transientErrors can be monitored by inspecting the ALL rsps on RESPONSE, als een tijdje minder dan 
+N rsps per req dan is er een node down
+qqqq upd diagram: admin ook daar naar kijken
 
 Client writes its request to one of both topics. Reads rsps from rsp topic qqqq
 - qqqq CUD must go to ALL
@@ -151,7 +155,7 @@ Examples
 }
 ```
 
-qqqq build java kluster-client and kluster-db-node
+qqqq fork java kluster-client and kluster-db-node
 
 ## Quickstart
 
