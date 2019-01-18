@@ -71,7 +71,7 @@ FOR EACH (request) {
         } CATCH (error) {
             produceToErrorTopic(createErrorResponse(request, error))
             processed = true
-            throw error            
+            THROW error            
         }
     }
 }
