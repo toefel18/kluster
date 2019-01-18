@@ -52,9 +52,9 @@ qqqq upd diagram: admin ook daar naar kijken
 qqqq of gewoon als van een nodeId al een tijdje geen rsps binnenkomen op RESPONSE en v allee andere wel 
 
 Client writes its request to one of both topics. Reads rsps from rsp topic qqqq
-- qqqq CUD must go to ALL
-- qqqq R to ALL: slow, determined at which db state
-- qqqq R to ONE: fast, from current db state of some node   
+- All CUD requests must go to ALL.
+- R request can go to ALL: slow but __consistent__ response
+- R request can go to ONE: fast but __eventually consistent__ response   
 
 Each node continuously reads request messages from the ALL and ONE topic asynchronously. Each messages is handed like this:
 ```
