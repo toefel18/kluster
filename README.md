@@ -58,7 +58,7 @@ Each node continuously reads request messages from the ALL and ONE topic asynchr
 ```
 FOR EACH (request) {
     processed = false
-    WHILE (processed) {
+    WHILE (!processed) {
         TRY {
             result = execute(request)
             commitTopicOffset()
