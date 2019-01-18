@@ -82,7 +82,7 @@ FOR EACH (request) {
 - Repeated transientErrors can be monitored by inspecting the ALL responses on RESPONSES: when for a while no responses have been received 
   from a node, while the others do send responses, something is wrong with that node.
 - A node can report system errors on the ERRORS.  
-qqqq upd diagram: rename Admin to Monitor, Monitor ook daar naar RESPONSES, rename RESPONSE to RESPONSES, idem ERRORS
+qqqq upd diagram: rename Admin to Monitor, Monitor ook daar naar RESPONSES, rename RESPONSE to RESPONSES, idem ERRORS, Monitor ipv _:Monitor_
 
 ### Replication
 
