@@ -103,7 +103,7 @@ KafkaBroker</panel_attributes>
       <h>50</h>
     </coordinates>
     <panel_attributes>lt=-()
-m2=RESPONSE
+m2=RESPONSES
 </panel_attributes>
     <additional_attributes>10.0;20.0;120.0;20.0</additional_attributes>
   </element>
@@ -112,7 +112,7 @@ m2=RESPONSE
     <coordinates>
       <x>390</x>
       <y>300</y>
-      <w>90</w>
+      <w>100</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>Key: UML2
@@ -187,11 +187,11 @@ m2=1</panel_attributes>
     <coordinates>
       <x>340</x>
       <y>90</y>
-      <w>70</w>
+      <w>80</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>lt=-()
-m2=ERROR
+m2=ERRORS
 </panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
@@ -211,12 +211,12 @@ m2=2..n</panel_attributes>
   <element>
     <id>UMLActor</id>
     <coordinates>
-      <x>560</x>
-      <y>100</y>
-      <w>60</w>
+      <x>550</x>
+      <y>70</y>
+      <w>80</w>
       <h>110</h>
     </coordinates>
-    <panel_attributes>_:Admin_</panel_attributes>
+    <panel_attributes>Monitor</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -229,5 +229,16 @@ m2=2..n</panel_attributes>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;210.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>490</x>
+      <y>50</y>
+      <w>90</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;70.0;30.0</additional_attributes>
   </element>
 </diagram>
