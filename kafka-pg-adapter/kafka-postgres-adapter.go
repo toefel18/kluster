@@ -16,7 +16,7 @@ import (
 
 func main() {
 	log.Println("Starting Kafka -> Postgres adapter, waiting 10 seconds for kafka and postgres to init")
-	time.Sleep(10 * time.Second)
+	time.Sleep(30 * time.Second)
 	pgConnectionString := mustHaveEnvironment("DATABASE_ADDRESS")
 	kafkaBootstrapServers := mustHaveEnvironment("KAFKA_BOOTSTRAP_SERVERS")
 	kafkaMutationTopic := mustHaveEnvironment("KAFKA_MUTATION_TOPIC")
